@@ -24,7 +24,7 @@ async def fetch_html(url: str):
         url (str): The URL to fetch HTML from.
 
     Returns:
-        JSONResponse: A JSON response containing the HTML content.
+        JSONResponse: A JSON response containing the cleaned HTML content.
     """
     # Validate the URL format
     url_pattern = re.compile(
@@ -41,7 +41,11 @@ async def fetch_html(url: str):
             response = await client.get(url)
             response.raise_for_status()  # Raise an error for bad responses (4xx, 5xx)
             html_content = response.text
-        return JSONResponse({"html": html_content})
+            
+            # Clean up the HTML content by removing escape sequences
+            cleaned_html = html_content.replace("\\n", "\n").replace('\\"', '"')
+        
+        return JSONResponse({"html": cleaned_html})
     except httpx.RequestError as e:
         return JSONResponse({"error": str(e)}, status_code=500)
     except httpx.HTTPStatusError as e:
